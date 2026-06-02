@@ -1,0 +1,13 @@
+.loading {
+    animation: tourne 1s infinite linear;
+    width: 90%;
+}
+
+@keyframes tourne {
+    from {
+        transform: rotateZ(0deg);
+    }
+    to {
+        transform: rotateZ(360deg);
+    }
+}
