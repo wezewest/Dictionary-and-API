@@ -5,15 +5,48 @@ const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
+function accent(lettre) {
+    if (typeof lettre !== "string") return [];
+
+    switch (lettre) {
+        case "e" : return ["é", "è", "ê"];
+        case "a" : return ["à"];
+        default : return [];
+    }
+}
 
 export async function base_getMot_by(lettre) {
     if (typeof lettre !== "string") return;
-    const {data , error } = await supabase
+    const min = lettre.toLowerCase();
+    let res = []
+    let callvalue;
+    //console.log(min , maj);
+
+    //en miniscule et en majuscule avec ilike
+    callvalue = await supabase
     .from('mot').select('*')
-    .like("name", lettre+"%");
-    if (error) console.log(error);
-    console.log(data);
-    return data
+    .ilike("name", min+"%");
+
+    if (callvalue.error) console.log(callvalue.error);
+    if (callvalue.data) res = [...res, ...callvalue.data];
+    console.log(callvalue.data);
+
+    //tous ceux avec des accents
+    const acce = accent(min);
+    console.log("accent", acce);
+    if (acce.length !== 0) 
+        for (let i=0; i<acce.length; i++) {
+
+            //min et maj avec ilike
+            callvalue = await supabase
+            .from('mot').select('*')
+            .ilike("name", acce[i]+"%");
+
+            if (callvalue.error) console.log(callvalue.error);
+            if (callvalue.data) res = [...res, ...callvalue.data];
+        }
+
+    return res;
 }
 
 //ajoute un mot dans la table 'usermot'
@@ -35,7 +68,7 @@ export async function base_addWord(word) {
 export async function base_getMot_all() {
     const {data , error } = await supabase
     .from('mot').select('*');
-    console.log(data);
+    //console.log(data);
     if (error) {
         console.log(error); 
         return [];
